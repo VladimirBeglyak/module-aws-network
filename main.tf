@@ -177,10 +177,10 @@ resource "aws_route_table_association" "private-b-association" {
 module "aws-network" {
   source = "github.com/VladimirBeglyak/module-aws-network"
 
-  env_name              = var.env_name
+  env_name              = local.env_name
   vpc_name              = "msur-VPC"
-  cluster_name          = var.k8s_cluster_name
-  aws_region            = var.aws_region
+  cluster_name          = local.k8s_cluster_name
+  aws_region            = local.aws_region
   main_vpc_cidr         = "10.10.0.0/16"
   private_subnet_a_cidr = "10.10.0.0/18"
   private_subnet_b_cidr = "10.10.64.0/18"
