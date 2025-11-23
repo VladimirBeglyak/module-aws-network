@@ -57,7 +57,7 @@ resource "aws_subnet" "private-subnet-a" {
       "${local.vpc_name}-private-subnet-a"
     )
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                      = "1"
+    "kubernetes.io/role/internal-elb"             = "1"
   }
 }
 
@@ -71,7 +71,7 @@ resource "aws_subnet" "private-subnet-b" {
       "${local.vpc_name}-private-subnet-b"
     )
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                      = "1"
+    "kubernetes.io/role/interanl-elb"             = "1"
   }
 }
 
@@ -88,7 +88,7 @@ resource "aws_route_table" "public-route" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "aws_internet_gateway.igw.id"
+    gateway_id = aws_internet_gateway.igw.id
   }
 
   tags = {
@@ -120,7 +120,7 @@ resource "aws_eip" "nat-b" {
 
 resource "aws_nat_gateway" "nat-gw-a" {
   allocation_id = aws_eip.nat-a.id
-  subnet_id     = aws_subnet.private-subnet-a.id
+  subnet_id     = aws_subnet.public-subnet-a.id
   depends_on    = [aws_internet_gateway.igw]
 
   tags = {
@@ -130,7 +130,7 @@ resource "aws_nat_gateway" "nat-gw-a" {
 
 resource "aws_nat_gateway" "nat-gw-b" {
   allocation_id = aws_eip.nat-b.id
-  subnet_id     = aws_subnet.private-subnet-b.id
+  subnet_id     = aws_subnet.public-subnet-b.id
   depends_on    = [aws_internet_gateway.igw]
 
   tags = {
@@ -143,7 +143,7 @@ resource "aws_route_table" "private-route-a" {
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = "aws_nat_gateway.nat-igw-a.id"
+    nat_gateway_id = aws_nat_gateway.nat-gw-a.id
   }
 
   tags = {
@@ -156,7 +156,7 @@ resource "aws_route_table" "private-route-b" {
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = "aws_nat_gateway.nat-igw-b.id"
+    nat_gateway_id = aws_nat_gateway.nat-gw-b.id
   }
 
   tags = {
