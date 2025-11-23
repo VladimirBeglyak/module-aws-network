@@ -97,12 +97,12 @@ resource "aws_route_table" "public-route" {
 }
 
 resource "aws_route_table_association" "public-a-association" {
-  subnet_id      = aws_subnet.private-subnet-a.id
+  subnet_id      = aws_subnet.public-subnet-a.id
   route_table_id = aws_route_table.public-route.id
 }
 
 resource "aws_route_table_association" "public-b-association" {
-  subnet_id      = aws_subnet.private-subnet-b.id
+  subnet_id      = aws_subnet.public-subnet-b.id
   route_table_id = aws_route_table.public-route.id
 }
 
