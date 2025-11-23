@@ -1,0 +1,56 @@
+name: Crypto Currency Environment Build
+
+on:
+  create:
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install aws-iam-authenticator
+        run: |
+          echo Installing aws-iam-authenticator...
+          mkdir ~/aws
+          curl -o ~/aws/aws-iam-authenticator \
+          "https://amazon-eks.s3.us-west-2.amazonaws.com/\
+          1.16.8/2020-04-16/bin/linux/amd64/aws-iam-authenticator"
+          chmod +x ~/aws/aws-iam-authenticator
+          sudo cp ~/aws/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
+          aws ec2 describe-vpcs --filters Name=cidr,Values=10.10.0.0/16
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.12.19
+
+      - name: Terraform fmt
+        run: terraform fmt
+        working-directory: infra
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: infra
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+        working-directory: infra
+
+      - name: Terraform Plan
+        run: terraform plan -no-color
+        working-directory: infra
+
+      - name: Terraform Apply
+        run: terraform apply -no-color -auto-approve
+        working-directory: infra
+
+      - name: Upload kubeconfig file
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubeconfig
+          path: kubeconfig
